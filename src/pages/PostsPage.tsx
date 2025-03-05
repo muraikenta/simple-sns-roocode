@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { LogOut, Edit, Plus } from "lucide-react";
+import { LogOut, Edit, Plus, UserCog } from "lucide-react";
 import PostForm from "@/components/posts/PostForm";
 import DeletePostButton from "@/components/posts/DeletePostButton";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
@@ -112,6 +112,15 @@ const PostsPage = () => {
             <span className="text-sm text-muted-foreground">
               {user.user_metadata?.username || user.email}
             </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/profile/edit")}
+              className="flex items-center gap-1"
+            >
+              <UserCog size={16} />
+              <span>プロフィール編集</span>
+            </Button>
             <Button
               variant="destructive"
               size="sm"

@@ -5,8 +5,10 @@ import { supabase } from "./lib/supabase";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import PostsPage from "./pages/PostsPage";
+import ProfileEditPage from "./pages/ProfileEditPage"; // 追加
 import { ErrorDialogProvider } from "./contexts/ErrorDialogContext";
 import { AlertDialogProvider } from "./contexts/AlertDialogContext";
+import { Toaster } from "./components/ui/sonner"; // 追加
 
 function App() {
   useEffect(() => {
@@ -29,10 +31,12 @@ function App() {
       <AlertDialogProvider>
         <BrowserRouter>
           <div className="app-container">
+            <Toaster />
             <Routes>
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/posts" element={<PostsPage />} />
+              <Route path="/profile/edit" element={<ProfileEditPage />} />
               <Route path="/" element={<Navigate to="/signup" replace />} />
             </Routes>
           </div>
