@@ -23,6 +23,7 @@ interface Post {
   content: string;
   user_id: string;
   username: string; // ユーザー名を追加
+  avatar_url?: string | null; // プロフィール画像URLを追加
 }
 
 const PostsPage = () => {
@@ -38,19 +39,20 @@ const PostsPage = () => {
       // 投稿データとユーザー情報を一緒に取得
       const { data, error } = await supabase
         .from("posts")
-        .select("*, users(username)")
+        .select("*, users(username, avatar_url)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       // ネストされたユーザーデータを平坦化
-      const postsWithUsername =
+      const postsWithUserInfo =
         data?.map((post) => ({
           ...post,
           username: post.users?.username || "不明なユーザー",
+          avatar_url: post.users?.avatar_url || null,
         })) || [];
 
-      setPosts(postsWithUsername);
+      setPosts(postsWithUserInfo);
     } catch (err: unknown) {
       const errorMsg =
         err instanceof Error ? err.message : "投稿の取得に失敗しました";
@@ -196,8 +198,23 @@ const PostsPage = () => {
               <CardContent>
                 <p className="mb-4 whitespace-pre-wrap">{post.content}</p>
               </CardContent>
-              <CardFooter className="py-2 text-xs text-muted-foreground flex justify-between">
-                <span>投稿者: {post.username}</span>
+              <CardFooter className="py-2 text-xs text-muted-foreground flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                    {post.avatar_url ? (
+                      <img
+                        src={post.avatar_url}
+                        alt={`${post.username}のプロフィール画像`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">
+                        No Img
+                      </div>
+                    )}
+                  </div>
+                  <span>投稿者: {post.username}</span>
+                </div>
                 <div>
                   {post.updated_at && post.updated_at !== post.created_at ? (
                     <span>

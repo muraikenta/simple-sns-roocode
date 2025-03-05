@@ -13,16 +13,30 @@
 3. 各ステップで動作確認を行う
 4. 全体を統合して最終確認を行う
 
+### モード切り替えルール
+
+実装時に論点整理が必要な場合は、Architectモードに切り替えて確認してください。これにより、技術的な課題や設計上の問題点を事前に洗い出し、効率的な実装を行うことができます。
+
+```
+# モード切り替えの例
+1. 複雑な機能実装前に、Architectモードで設計・論点整理を行う
+2. 論点が整理できたら、Codeモードに戻って実装を進める
+3. 実装中に新たな論点が発生した場合は、再度Architectモードに切り替える
+```
+
 ## コマンド実行ルール
 
 ### Git コマンド
 
 git commitする前には原則 git statusで状況を確認してください。これにより、意図しないファイルの変更や、コミットし忘れを防ぐことができます。
 
+また、コミット前にはeslintの確認を行い、コードの品質を保つようにしてください。
+
 ```bash
 # 正しい手順
 git status  # 変更状況を確認
 git add .   # 必要なファイルをステージング
+npm run lint  # eslintの確認
 git commit -m "コミットメッセージ"
 ```
 
@@ -39,7 +53,6 @@ npx supabase migration up
 ### Supabase マイグレーション
 
 マイグレーション手順は [Supabaseの宣言的なデータベーススキーマアプローチ](https://supabase.com/docs/guides/local-development/declarative-database-schemas) に従って進めてください。
-
 ### Supabase ローカル開発
 
 `supabase link`が必要なコマンド（例：`db push`, `db pull`, `migration repair`など）を実行する場合は、必ず`--local`オプションを付けてください。
@@ -49,4 +62,26 @@ npx supabase migration up
 npx supabase db push --local
 npx supabase migration repair --status reverted 20250305 --local
 ```
+
+## ファイル管理ルール
+
+### 実装計画ファイル
+
+実装計画や設計ドキュメントなどの一時的なファイルは、`temp`フォルダに配置してください。
+このフォルダは`.gitignore`に追加されており、バージョン管理の対象外となります。
+
+```
+# 正しいファイル配置
+temp/
+  ├── profile-edit-plan.md
+  ├── profile-edit-implementation-1.md
+  └── ...
+```
+
+## ドキュメント管理ルール
+
+### プロジェクトルールの追記
+
+対話中にプロジェクトのルールと思われる指示を受けた場合は、`.clinerules`ファイルに追記してください。
+これにより、プロジェクトのルールが一箇所に集約され、チーム全体で共有されます。
 
