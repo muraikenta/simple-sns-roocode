@@ -6,6 +6,7 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import PostsPage from "./pages/PostsPage";
 import { ErrorDialogProvider } from "./contexts/ErrorDialogContext";
+import { AlertDialogProvider } from "./contexts/AlertDialogContext";
 
 function App() {
   useEffect(() => {
@@ -25,16 +26,18 @@ function App() {
 
   return (
     <ErrorDialogProvider>
-      <BrowserRouter>
-        <div className="app-container">
-          <Routes>
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/posts" element={<PostsPage />} />
-            <Route path="/" element={<Navigate to="/signup" replace />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
+      <AlertDialogProvider>
+        <BrowserRouter>
+          <div className="app-container">
+            <Routes>
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/posts" element={<PostsPage />} />
+              <Route path="/" element={<Navigate to="/signup" replace />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </AlertDialogProvider>
     </ErrorDialogProvider>
   );
 }
