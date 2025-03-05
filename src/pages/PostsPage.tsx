@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { LogOut } from "lucide-react";
 
 interface Post {
   id: string;
@@ -59,40 +67,56 @@ const PostsPage = () => {
   };
 
   if (loading) {
-    return <div className="loading">読み込み中...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-muted-foreground">読み込み中...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="posts-container">
-      <div className="header">
-        <h1>投稿一覧</h1>
-        <div className="user-info">
-          {user && (
-            <>
-              <span>{user.user_metadata?.username || user.email}</span>
-              <button onClick={handleLogout} className="logout-button">
-                ログアウト
-              </button>
-            </>
-          )}
-        </div>
+    <div className="container mx-auto p-4 max-w-4xl">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">投稿一覧</h1>
+        {user && (
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">
+              {user.user_metadata?.username || user.email}
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleLogout}
+              className="flex items-center gap-1"
+            >
+              <LogOut size={16} />
+              <span>ログアウト</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {posts.length === 0 ? (
-        <div className="no-posts">
-          <p>投稿がありません</p>
-        </div>
+        <Card className="bg-muted/40">
+          <CardContent className="flex items-center justify-center h-40">
+            <p className="text-muted-foreground">投稿がありません</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="posts-list">
+        <div className="space-y-4">
           {posts.map((post) => (
-            <div key={post.id} className="post-card">
-              <h2>{post.title}</h2>
-              <p>{post.content}</p>
-              <div className="post-meta">
-                <span>{post.username || "匿名ユーザー"}</span>
-                <span>{new Date(post.created_at).toLocaleString()}</span>
-              </div>
-            </div>
+            <Card key={post.id} className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl">{post.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4">{post.content}</p>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{post.username || "匿名ユーザー"}</span>
+                  <span>{new Date(post.created_at).toLocaleString()}</span>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

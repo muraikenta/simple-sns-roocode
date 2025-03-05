@@ -1,6 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import { Eye, EyeOff } from "lucide-react";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -9,6 +28,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
 
   // バリデーション
   const isEmailValid = email.trim() !== "";
@@ -39,70 +59,98 @@ const LoginPage = () => {
     } catch (err: any) {
       // エラーメッセージを設定
       setError(err.message || "ログイン中にエラーが発生しました");
+      setIsErrorDialogOpen(true);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <h1>ログイン</h1>
+    <div className="flex items-center justify-center min-h-screen p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">ログイン</CardTitle>
+          <CardDescription className="text-center">
+            アカウントにログインしてください
+          </CardDescription>
+        </CardHeader>
 
-      {error && (
-        <div className="error-dialog">
-          <p>{error}</p>
-          <button onClick={() => setError(null)}>閉じる</button>
-        </div>
-      )}
+        <Dialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive">エラー</DialogTitle>
+              <DialogDescription>{error}</DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                onClick={() => setIsErrorDialogOpen(false)}
+                className="w-full"
+              >
+                閉じる
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      <form onSubmit={handleLogin}>
-        <div className="form-group">
-          <label htmlFor="email">メールアドレス</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-          />
-        </div>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                メールアドレス
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                className="w-full"
+              />
+            </div>
 
-        <div className="form-group">
-          <label htmlFor="password">パスワード</label>
-          <div className="password-input-container">
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setShowPassword(!showPassword)}
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                パスワード
+              </label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  className="w-full pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={!isFormValid || loading}
             >
-              {showPassword ? "非表示" : "表示"}
-            </button>
-          </div>
-        </div>
+              {loading ? "ログイン中..." : "ログイン"}
+            </Button>
+          </form>
+        </CardContent>
 
-        <button
-          type="submit"
-          className={`login-button ${!isFormValid ? "disabled" : ""}`}
-          disabled={!isFormValid || loading}
-        >
-          {loading ? "ログイン中..." : "ログイン"}
-        </button>
-      </form>
-
-      <div className="signup-link">
-        <p>
-          アカウントをお持ちでない方は
-          <a href="/signup">新規登録</a>
-          してください
-        </p>
-      </div>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-center">
+            アカウントをお持ちでない方は
+            <a href="/signup" className="text-primary font-medium ml-1">
+              新規登録
+            </a>
+            してください
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
