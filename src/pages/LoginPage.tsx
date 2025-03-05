@@ -11,15 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
 import { Eye, EyeOff } from "lucide-react";
+import { useErrorDialog } from "../contexts/ErrorDialogContext";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -27,8 +20,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false);
+  const { showError } = useErrorDialog();
 
   // バリデーション
   const isEmailValid = email.trim() !== "";
@@ -41,7 +33,6 @@ const LoginPage = () => {
     if (!isFormValid) return;
 
     setLoading(true);
-    setError(null);
 
     try {
       // Supabaseでログイン
@@ -56,10 +47,11 @@ const LoginPage = () => {
         // ログイン成功時は投稿一覧画面へ遷移
         navigate("/posts");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // エラーメッセージを設定
-      setError(err.message || "ログイン中にエラーが発生しました");
-      setIsErrorDialogOpen(true);
+      const errorMsg =
+        err instanceof Error ? err.message : "ログイン中にエラーが発生しました";
+      showError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -74,23 +66,6 @@ const LoginPage = () => {
             アカウントにログインしてください
           </CardDescription>
         </CardHeader>
-
-        <Dialog open={isErrorDialogOpen} onOpenChange={setIsErrorDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="text-destructive">エラー</DialogTitle>
-              <DialogDescription>{error}</DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                onClick={() => setIsErrorDialogOpen(false)}
-                className="w-full"
-              >
-                閉じる
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">

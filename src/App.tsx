@@ -5,6 +5,7 @@ import { supabase } from "./lib/supabase";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import PostsPage from "./pages/PostsPage";
+import { ErrorDialogProvider } from "./contexts/ErrorDialogContext";
 
 function App() {
   useEffect(() => {
@@ -23,16 +24,18 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <div className="app-container">
-        <Routes>
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/posts" element={<PostsPage />} />
-          <Route path="/" element={<Navigate to="/signup" replace />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <ErrorDialogProvider>
+      <BrowserRouter>
+        <div className="app-container">
+          <Routes>
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/posts" element={<PostsPage />} />
+            <Route path="/" element={<Navigate to="/signup" replace />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </ErrorDialogProvider>
   );
 }
 
