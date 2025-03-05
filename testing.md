@@ -39,7 +39,7 @@
 2. テスト用の設定ファイルを作成
 
    ```bash
-   cd test/supabase
+   cd test
    npx supabase init --project-id simple-sns-roocode-test
    ```
 
@@ -47,10 +47,10 @@
 
    ```bash
    # マイグレーションディレクトリへのシンボリックリンクを作成
-   ln -s ../../supabase/migrations migrations
+   ln -s ../supabase/migrations supabase/migrations
 
    # スキーマディレクトリへのシンボリックリンクを作成
-   ln -s ../../supabase/schemas schemas
+   ln -s ../supabase/schemas supabase/schemas
    ```
 
    これにより、開発環境のマイグレーションやスキーマが更新されると、テスト環境にも自動的に反映されます。
