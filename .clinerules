@@ -1,0 +1,30 @@
+# Cline Rules
+
+このプロジェクトでの開発ルールを記載しています。
+
+## コマンド実行ルール
+
+### Supabase コマンド
+
+Supabase コマンドは必ず npx 経由で実行してください。
+これは、プロジェクトでグローバルインストールされた supabase コマンドに依存せず、常に適切なバージョンの supabase コマンドを使用するためです。
+
+```bash
+# 正しい実行方法
+npx supabase migration up
+```
+
+### Supabase マイグレーション
+
+マイグレーション手順は [Supabaseの宣言的なデータベーススキーマアプローチ](https://supabase.com/docs/guides/local-development/declarative-database-schemas) に従って進めてください。
+
+### Supabase ローカル開発
+
+`supabase link`が必要なコマンド（例：`db push`, `db pull`, `migration repair`など）を実行する場合は、必ず`--local`オプションを付けてください。
+
+```bash
+# 正しい実行方法
+npx supabase db push --local
+npx supabase migration repair --status reverted 20250305 --local
+```
+

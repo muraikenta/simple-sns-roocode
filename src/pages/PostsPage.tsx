@@ -22,6 +22,7 @@ interface Post {
   title: string;
   content: string;
   user_id: string;
+  username: string; // ユーザー名を追加
 }
 
 const PostsPage = () => {
@@ -32,18 +33,24 @@ const PostsPage = () => {
   const [showPostForm, setShowPostForm] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { showError } = useErrorDialog();
-
   const fetchPosts = useCallback(async () => {
     try {
-      // 投稿データを取得
+      // 投稿データとユーザー情報を一緒に取得
       const { data, error } = await supabase
         .from("posts")
-        .select("*")
+        .select("*, users(username)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setPosts(data || []);
+      // ネストされたユーザーデータを平坦化
+      const postsWithUsername =
+        data?.map((post) => ({
+          ...post,
+          username: post.users?.username || "不明なユーザー",
+        })) || [];
+
+      setPosts(postsWithUsername);
     } catch (err: unknown) {
       const errorMsg =
         err instanceof Error ? err.message : "投稿の取得に失敗しました";
@@ -181,12 +188,7 @@ const PostsPage = () => {
                 <p className="mb-4 whitespace-pre-wrap">{post.content}</p>
               </CardContent>
               <CardFooter className="py-2 text-xs text-muted-foreground flex justify-between">
-                <span>
-                  投稿者:{" "}
-                  {user && post.user_id === user.id
-                    ? user.user_metadata?.username || user.email
-                    : "他のユーザー"}
-                </span>
+                <span>投稿者: {post.username}</span>
                 <div>
                   {post.updated_at && post.updated_at !== post.created_at ? (
                     <span>
