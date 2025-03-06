@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,12 +14,14 @@ import { ImageUpload } from "@/components/ui/ImageUpload";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useAuthCheck } from "@/lib/hooks/useAuthCheck";
+import PageHeader from "@/components/layout/PageHeader";
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuthCheck();
   const [saving, setSaving] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { showError } = useErrorDialog();
@@ -29,57 +30,48 @@ const ProfileEditPage = () => {
   const isUsernameValid = username.trim() !== "";
   const isFormValid = isUsernameValid;
 
+  const fetchUserProfile = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      setProfileLoading(true);
+      // ユーザープロフィールを取得
+      const { data: profileData, error: profileError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      setUsername(profileData.username || "");
+      setAvatarUrl(profileData.avatar_url || null);
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : "プロフィールの取得に失敗しました";
+      showError(errorMsg);
+    } finally {
+      setProfileLoading(false);
+    }
+  }, [user, showError]);
+
+  // 認証情報取得後、プロフィール情報を取得 (useEffectを使用)
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        // 認証状態を確認
-        const { data: sessionData } = await supabase.auth.getSession();
-
-        if (!sessionData.session) {
-          navigate("/login");
-          return;
-        }
-
-        const userId = sessionData.session.user.id;
-
-        // ユーザープロフィールを取得
-        const { data: profileData, error: profileError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", userId)
-          .single();
-
-        if (profileError) throw profileError;
-
-        setUser(sessionData.session.user);
-        setUsername(profileData.username || "");
-        setAvatarUrl(profileData.avatar_url || null);
-      } catch (err) {
-        const errorMsg =
-          err instanceof Error
-            ? err.message
-            : "プロフィールの取得に失敗しました";
-        showError(errorMsg);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [navigate, showError]);
+    if (user && profileLoading) {
+      fetchUserProfile();
+    }
+  }, [user, profileLoading, fetchUserProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isFormValid) return;
+    if (!isFormValid || !user) return;
 
     setSaving(true);
 
     try {
-      if (!user) {
-        throw new Error("ユーザー情報が取得できませんでした");
-      }
-
       const { error } = await supabase
         .from("users")
         .update({
@@ -106,7 +98,7 @@ const ProfileEditPage = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || (user && profileLoading)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 text-primary animate-spin" />
@@ -116,6 +108,12 @@ const ProfileEditPage = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-md">
+      <PageHeader 
+        showBackButton={true} 
+        user={user}
+        showProfileButton={false}
+      />
+      
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl text-center">
