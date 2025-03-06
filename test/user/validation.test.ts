@@ -84,8 +84,8 @@ describe("User Validation", () => {
       const email = `test-${Date.now()}-${Math.random()
         .toString(36)
         .substring(2, 9)}@example.com`;
-      // 短いパスワード（Supabaseのデフォルト最小長は6文字）
-      const shortPassword = "12345";
+      // 短いパスワード（最小長は8文字）
+      const shortPassword = "1234567";
 
       // 短いパスワードでユーザーを登録（失敗するはず）
       const { error } = await supabase.auth.signUp({
@@ -98,7 +98,7 @@ describe("User Validation", () => {
 
       // エラーがあることを確認
       expect(error).not.toBeNull();
-      // Supabaseのエラーメッセージは「Password should be at least 6 characters」などを含むはず
+      // Supabaseのエラーメッセージは「Password should be at least 8 characters」などを含むはず
       expect(error!.message).toMatch(
         /password.*too short|at least \d+ characters/i
       );

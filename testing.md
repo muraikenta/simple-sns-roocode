@@ -77,6 +77,31 @@
    npm test -- test/user/rls.test.ts
    ```
 
+### 2.3 設定変更後のテスト環境リセット
+
+`config.toml`などの設定ファイルを変更した場合、変更を反映するには以下の手順でDocker環境をクリーンアップする必要があります：
+
+1. テスト環境を停止
+
+   ```bash
+   cd test
+   npx supabase stop
+   ```
+
+2. Dockerボリュームを削除（データベースとストレージをクリーンアップ）
+
+   ```bash
+   docker volume rm supabase_db_simple-sns-roocode-test supabase_inbucket_simple-sns-roocode-test supabase_storage_simple-sns-roocode-test
+   ```
+
+3. 環境を再起動（クリーンな状態から）
+
+   ```bash
+   npx supabase start
+   ```
+
+これにより、キャッシュや古い設定が残らず、新しい設定が確実に反映されます。
+
 ## 3. テストツールとフレームワーク
 
 ### 3.1 テストフレームワーク
