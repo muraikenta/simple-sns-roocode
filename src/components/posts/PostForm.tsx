@@ -108,17 +108,22 @@ const PostForm = ({ onSuccess, userId, initialData }: PostFormProps) => {
             <label htmlFor="content" className="text-sm font-medium">
               内容
             </label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setContent(e.target.value)
-              }
-              placeholder="投稿内容を入力"
-              disabled={loading}
-              className="min-h-[120px]"
-              maxLength={1000}
-            />
+            <div className="space-y-1">
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setContent(e.target.value)
+                }
+                placeholder="投稿内容を入力"
+                disabled={loading}
+                className="min-h-[120px]"
+                maxLength={140}
+              />
+              <div className="text-xs text-right text-muted-foreground">
+                {content.length}/140文字
+              </div>
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end gap-2">

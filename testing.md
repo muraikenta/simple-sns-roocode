@@ -64,7 +64,13 @@
    npx supabase start
    ```
 
-2. テストを実行
+2. 最新のマイグレーションを適用（新しいテスト実行前に必須）
+
+   ```bash
+   npx supabase migration up
+   ```
+
+3. テストを実行
 
    ```bash
    cd ..  # プロジェクトルートに戻る
@@ -79,7 +85,7 @@
 
 ### 2.3 設定変更後のテスト環境リセット
 
-`config.toml`などの設定ファイルを変更した場合、変更を反映するには以下の手順でDocker環境をクリーンアップする必要があります：
+`config.toml`などの設定ファイルを変更した場合、変更を反映するには以下の手順で Docker 環境をクリーンアップする必要があります：
 
 1. テスト環境を停止
 
@@ -88,7 +94,7 @@
    npx supabase stop
    ```
 
-2. Dockerボリュームを削除（データベースとストレージをクリーンアップ）
+2. Docker ボリュームを削除（データベースとストレージをクリーンアップ）
 
    ```bash
    docker volume rm supabase_db_simple-sns-roocode-test supabase_inbucket_simple-sns-roocode-test supabase_storage_simple-sns-roocode-test

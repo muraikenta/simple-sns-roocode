@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.posts (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   title TEXT NOT NULL,
-  content TEXT NOT NULL,
+  content TEXT NOT NULL CHECK (length(content) <= 140),
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE
 );
 
