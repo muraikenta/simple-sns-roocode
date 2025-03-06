@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +15,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useAuthCheck } from "@/lib/hooks/useAuthCheck";
 import PageHeader from "@/components/layout/PageHeader";
+import RepositoryFactory from "@/repositories/factory";
 
 const ProfileEditPage = () => {
   const navigate = useNavigate();
@@ -30,22 +30,22 @@ const ProfileEditPage = () => {
   const isUsernameValid = username.trim() !== "";
   const isFormValid = isUsernameValid;
 
+  const userRepository = RepositoryFactory.getUserRepository();
+
   const fetchUserProfile = useCallback(async () => {
     if (!user) return;
     
     try {
       setProfileLoading(true);
-      // ユーザープロフィールを取得
-      const { data: profileData, error: profileError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      // リポジトリを使用してユーザープロフィールを取得
+      const userProfile = await userRepository.getUserById(user.id);
 
-      if (profileError) throw profileError;
+      if (!userProfile) {
+        throw new Error("プロフィールが見つかりませんでした");
+      }
 
-      setUsername(profileData.username || "");
-      setAvatarUrl(profileData.avatar_url || null);
+      setUsername(userProfile.username || "");
+      setAvatarUrl(userProfile.avatar_url || null);
     } catch (err) {
       const errorMsg =
         err instanceof Error
@@ -55,7 +55,7 @@ const ProfileEditPage = () => {
     } finally {
       setProfileLoading(false);
     }
-  }, [user, showError]);
+  }, [user, showError, userRepository]);
 
   // 認証情報取得後、プロフィール情報を取得 (useEffectを使用)
   useEffect(() => {
@@ -72,16 +72,12 @@ const ProfileEditPage = () => {
     setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from("users")
-        .update({
-          username,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-
-      if (error) throw error;
+      // リポジトリを使用してユーザープロフィールを更新
+      await userRepository.updateUser(user.id, {
+        username,
+        avatar_url: avatarUrl,
+        updated_at: new Date().toISOString(),
+      });
 
       // 成功メッセージを表示して投稿一覧ページに遷移
       toast.success("プロフィールを更新しました", {

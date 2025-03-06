@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -13,6 +12,7 @@ import {
 } from "../components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import { useErrorDialog } from "../contexts/ErrorDialogContext";
+import RepositoryFactory from "@/repositories/factory";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -27,6 +27,8 @@ const LoginPage = () => {
   const isPasswordValid = password.trim() !== "";
   const isFormValid = isEmailValid && isPasswordValid;
 
+  const authRepository = RepositoryFactory.getAuthRepository();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -35,15 +37,10 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // Supabaseでログイン
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // リポジトリを使用してログイン
+      const user = await authRepository.signIn(email, password);
 
-      if (error) throw error;
-
-      if (data.user) {
+      if (user) {
         // ログイン成功時は投稿一覧画面へ遷移
         navigate("/posts");
       }

@@ -1,25 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import RepositoryFactory from "@/repositories/factory";
 
 export const useAuthCheck = (redirectTo = "/login") => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const authRepository = RepositoryFactory.getAuthRepository();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        const currentUser = await authRepository.getCurrentUser();
 
-        if (!data.session) {
+        if (!currentUser) {
           // 未認証の場合はリダイレクト
           navigate(redirectTo);
           return;
         }
 
-        setUser(data.session.user);
+        setUser(currentUser);
       } catch (error) {
         console.error("認証チェックエラー:", error);
         navigate(redirectTo);
@@ -29,7 +30,7 @@ export const useAuthCheck = (redirectTo = "/login") => {
     };
 
     checkAuth();
-  }, [navigate, redirectTo]);
+  }, [navigate, redirectTo, authRepository]);
 
   return { user, loading };
 };

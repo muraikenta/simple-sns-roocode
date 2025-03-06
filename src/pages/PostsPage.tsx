@@ -2,12 +2,12 @@ import { useState, useCallback, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import { useAuthCheck } from "@/lib/hooks/useAuthCheck";
 import PostForm from "@/components/posts/PostForm";
 import PostCard, { PostData } from "@/components/posts/PostCard";
 import PageHeader from "@/components/layout/PageHeader";
+import RepositoryFactory from "@/repositories/factory";
 
 const PostsPage = () => {
   const { user, loading } = useAuthCheck();
@@ -17,27 +17,15 @@ const PostsPage = () => {
   const [postsLoading, setPostsLoading] = useState(true);
   const { showError } = useErrorDialog();
 
+  const postRepository = RepositoryFactory.getPostRepository();
+
   const fetchPosts = useCallback(async () => {
     if (!user) return;
 
     try {
       setPostsLoading(true);
-      // 投稿データとユーザー情報を一緒に取得
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*, users(username, avatar_url)")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      // ネストされたユーザーデータを平坦化
-      const postsWithUserInfo =
-        data?.map((post) => ({
-          ...post,
-          username: post.users?.username || "不明なユーザー",
-          avatar_url: post.users?.avatar_url || null,
-        })) || [];
-
+      // リポジトリを使用して投稿データを取得
+      const postsWithUserInfo = await postRepository.getAllPosts();
       setPosts(postsWithUserInfo);
     } catch (err: unknown) {
       const errorMsg =
@@ -47,7 +35,7 @@ const PostsPage = () => {
     } finally {
       setPostsLoading(false);
     }
-  }, [user, showError]);
+  }, [user, showError, postRepository]);
 
   // useEffectを使ってuser依存でfetchPostsを呼び出す
   useEffect(() => {

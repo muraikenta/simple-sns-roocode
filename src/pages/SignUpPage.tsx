@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -13,6 +12,7 @@ import {
 } from "../components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import { useErrorDialog } from "../contexts/ErrorDialogContext";
+import RepositoryFactory from "@/repositories/factory";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -32,6 +32,8 @@ const SignUpPage = () => {
   const isPasswordValid = password.length >= 8;
   const isFormValid = isUsernameValid && isEmailValid && isPasswordValid;
 
+  const authRepository = RepositoryFactory.getAuthRepository();
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -40,20 +42,10 @@ const SignUpPage = () => {
     setLoading(true);
 
     try {
-      // Supabaseで新規ユーザー登録
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-          },
-        },
-      });
+      // リポジトリを使用して新規ユーザー登録
+      const user = await authRepository.signUp(email, password, username);
 
-      if (error) throw error;
-
-      if (data.user) {
+      if (user) {
         // 登録成功時は投稿一覧画面へ遷移
         navigate("/posts");
       }

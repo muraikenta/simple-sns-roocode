@@ -2,12 +2,13 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import { useAuthCheck } from "@/lib/hooks/useAuthCheck";
 import PostCard, { PostData } from "@/components/posts/PostCard";
 import UserProfileCard from "@/components/users/UserProfileCard";
 import PageHeader from "@/components/layout/PageHeader";
+import RepositoryFactory from "@/repositories/factory";
+// User型は内部で定義しているのでimport不要
 
 interface UserProfile {
   id: string;
@@ -24,30 +25,27 @@ const UserDetailPage = () => {
   const [profileLoading, setProfileLoading] = useState(true);
   const { showError } = useErrorDialog();
 
+  const userRepository = RepositoryFactory.getUserRepository();
+  const postRepository = RepositoryFactory.getPostRepository();
+
   const fetchUserData = useCallback(async () => {
     if (!userId) return;
 
     try {
       setProfileLoading(true);
+      
       // ユーザープロフィール情報を取得
-      const { data: profileData, error: profileError } = await supabase
-        .from("users")
-        .select("id, username, avatar_url, bio")
-        .eq("id", userId)
-        .single();
-
-      if (profileError) throw profileError;
-      setProfile(profileData);
+      const userProfile = await userRepository.getUserById(userId);
+      
+      if (!userProfile) {
+        throw new Error("ユーザーが見つかりませんでした");
+      }
+      
+      setProfile(userProfile);
 
       // ユーザーの投稿を取得
-      const { data: postsData, error: postsError } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-
-      if (postsError) throw postsError;
-      setPosts(postsData || []);
+      const userPosts = await postRepository.getPostsByUserId(userId);
+      setPosts(userPosts);
     } catch (err: unknown) {
       const errorMsg =
         err instanceof Error ? err.message : "ユーザー情報の取得に失敗しました";
@@ -56,7 +54,7 @@ const UserDetailPage = () => {
     } finally {
       setProfileLoading(false);
     }
-  }, [userId, showError]);
+  }, [userId, showError, userRepository, postRepository]);
 
   // 認証後にデータ取得 (useEffectを使用)
   useEffect(() => {

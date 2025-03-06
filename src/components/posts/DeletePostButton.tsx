@@ -3,7 +3,8 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import { useAlertDialog } from "@/contexts/AlertDialogContext";
-import { supabase } from "@/lib/supabase";
+import { useAuthCheck } from "@/lib/hooks/useAuthCheck";
+import RepositoryFactory from "@/repositories/factory";
 
 interface DeletePostButtonProps {
   postId: string;
@@ -15,14 +16,17 @@ const DeletePostButton = ({ postId, onSuccess }: DeletePostButtonProps) => {
   const { showError } = useErrorDialog();
   const { showAlert } = useAlertDialog();
 
+  const { user } = useAuthCheck();
+  const postRepository = RepositoryFactory.getPostRepository();
+
   const handleDelete = async () => {
+    if (!user) return;
+    
     setLoading(true);
 
     try {
-      const { error } = await supabase.from("posts").delete().eq("id", postId); // RLSで自分の投稿のみ削除可能
-
-      if (error) throw error;
-
+      // リポジトリを使用して投稿を削除
+      await postRepository.deletePost(postId, user.id); // ユーザーIDも渡してRLSポリシーを遵守
       onSuccess();
     } catch (err: unknown) {
       const errorMsg =

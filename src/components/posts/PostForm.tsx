@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
-import { supabase } from "@/lib/supabase";
+import RepositoryFactory from "@/repositories/factory";
 
 interface PostFormProps {
   onSuccess: () => void;
@@ -30,6 +30,8 @@ const PostForm = ({ onSuccess, userId, initialData }: PostFormProps) => {
 
   const isEditing = !!initialData;
 
+  const postRepository = RepositoryFactory.getPostRepository();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -42,27 +44,22 @@ const PostForm = ({ onSuccess, userId, initialData }: PostFormProps) => {
 
     try {
       if (isEditing) {
-        // 投稿を更新
-        const { error } = await supabase
-          .from("posts")
-          .update({
+        // 投稿を更新（リポジトリを使用）
+        await postRepository.updatePost(
+          initialData.id,
+          userId,
+          {
             title,
             content,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", initialData.id)
-          .eq("user_id", userId); // 自分の投稿のみ更新可能
-
-        if (error) throw error;
+          }
+        );
       } else {
-        // 新規投稿を作成
-        const { error } = await supabase.from("posts").insert({
+        // 新規投稿を作成（リポジトリを使用）
+        await postRepository.createPost({
           title,
           content,
           user_id: userId,
         });
-
-        if (error) throw error;
       }
 
       // 成功したらフォームをリセット

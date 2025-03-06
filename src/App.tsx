@@ -1,29 +1,28 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
-import { supabase } from "./lib/supabase";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import PostsPage from "./pages/PostsPage";
 import ProfileEditPage from "./pages/ProfileEditPage";
-import UserDetailPage from "./pages/UserDetailPage"; // 追加
+import UserDetailPage from "./pages/UserDetailPage";
 import { ErrorDialogProvider } from "./contexts/ErrorDialogContext";
 import { AlertDialogProvider } from "./contexts/AlertDialogContext";
 import { Toaster } from "./components/ui/sonner";
+import RepositoryFactory from "./repositories/factory";
 
 function App() {
   useEffect(() => {
-    // Set up auth state listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Set up auth state listener using repository
+    const authRepository = RepositoryFactory.getAuthRepository();
+    const unsubscribe = authRepository.onAuthStateChange((user) => {
       // セッション状態が変更されたときの処理
-      console.log("Auth state changed:", session ? "Logged in" : "Logged out");
+      console.log("Auth state changed:", user ? "Logged in" : "Logged out");
     });
 
     // Cleanup subscription on unmount
     return () => {
-      subscription.unsubscribe();
+      unsubscribe();
     };
   }, []);
 

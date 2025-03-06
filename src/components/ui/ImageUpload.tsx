@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { Button } from "./button";
-import { supabase } from "@/lib/supabase";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import { Upload, Loader2 } from "lucide-react";
+import RepositoryFactory from "@/repositories/factory";
 
 interface ImageUploadProps {
   initialImageUrl?: string | null;
@@ -22,6 +22,8 @@ export const ImageUpload = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { showError } = useErrorDialog();
 
+  const storageRepository = RepositoryFactory.getStorageRepository();
+
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
@@ -34,19 +36,11 @@ export const ImageUpload = ({
       const fileExt = file.name.split(".").pop();
       const filePath = `${userId}/avatar.${fileExt}`;
 
-      // Supabase Storageにアップロード
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) {
-        throw uploadError;
-      }
+      // リポジトリを使用してファイルをアップロード
+      await storageRepository.uploadFile("avatars", filePath, file);
 
       // 公開URLを取得
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      const publicUrl = storageRepository.getFileUrl("avatars", filePath);
 
       setImageUrl(publicUrl);
       onImageUploaded(publicUrl);

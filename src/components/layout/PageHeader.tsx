@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { LogOut, UserCog, ArrowLeft } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import RepositoryFactory from "@/repositories/factory";
 
 interface PageHeaderProps {
   title?: string;
@@ -19,8 +19,10 @@ const PageHeader = ({
 }: PageHeaderProps) => {
   const navigate = useNavigate();
 
+  const authRepository = RepositoryFactory.getAuthRepository();
+
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await authRepository.signOut();
     navigate("/login");
   };
 
