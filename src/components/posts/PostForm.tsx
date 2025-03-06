@@ -11,15 +11,12 @@ import {
 } from "@/components/ui/card";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import RepositoryFactory from "@/repositories/factory";
+import { Post, PostValidation, PostConstants } from "@/types/models";
 
 interface PostFormProps {
   onSuccess: () => void;
   userId: string;
-  initialData?: {
-    id: string;
-    title: string;
-    content: string;
-  };
+  initialData?: Pick<Post, "id" | "title" | "content">;
 }
 
 const PostForm = ({ onSuccess, userId, initialData }: PostFormProps) => {
@@ -35,8 +32,9 @@ const PostForm = ({ onSuccess, userId, initialData }: PostFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !content.trim()) {
-      showError("タイトルと内容を入力してください");
+    // モデルのバリデーション関数を使用
+    if (!PostValidation.isPostValid({ title, content })) {
+      showError("タイトルと内容を正しく入力してください");
       return;
     }
 
@@ -98,7 +96,7 @@ const PostForm = ({ onSuccess, userId, initialData }: PostFormProps) => {
               }
               placeholder="タイトルを入力"
               disabled={loading}
-              maxLength={100}
+              maxLength={PostConstants.MAX_TITLE_LENGTH}
             />
           </div>
           <div className="space-y-2">
@@ -115,10 +113,10 @@ const PostForm = ({ onSuccess, userId, initialData }: PostFormProps) => {
                 placeholder="投稿内容を入力"
                 disabled={loading}
                 className="min-h-[120px]"
-                maxLength={140}
+                maxLength={PostConstants.MAX_CONTENT_LENGTH}
               />
               <div className="text-xs text-right text-muted-foreground">
-                {content.length}/140文字
+                {content.length}/{PostConstants.MAX_CONTENT_LENGTH}文字
               </div>
             </div>
           </div>

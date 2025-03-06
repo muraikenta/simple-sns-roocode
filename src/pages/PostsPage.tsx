@@ -5,15 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import { useAuthCheck } from "@/lib/hooks/useAuthCheck";
 import PostForm from "@/components/posts/PostForm";
-import PostCard, { PostData } from "@/components/posts/PostCard";
+import PostCard from "@/components/posts/PostCard";
 import PageHeader from "@/components/layout/PageHeader";
 import RepositoryFactory from "@/repositories/factory";
+import { PostWithUser } from "@/types/models";
 
 const PostsPage = () => {
   const { user, loading } = useAuthCheck();
-  const [posts, setPosts] = useState<PostData[]>([]);
+  const [posts, setPosts] = useState<PostWithUser[]>([]);
   const [showPostForm, setShowPostForm] = useState(false);
-  const [editingPost, setEditingPost] = useState<PostData | null>(null);
+  const [editingPost, setEditingPost] = useState<PostWithUser | null>(null);
   const [postsLoading, setPostsLoading] = useState(true);
   const { showError } = useErrorDialog();
 
@@ -50,7 +51,7 @@ const PostsPage = () => {
     setEditingPost(null);
   };
 
-  const handleEditPost = (post: PostData) => {
+  const handleEditPost = (post: PostWithUser) => {
     setEditingPost(post);
     setShowPostForm(true);
   };

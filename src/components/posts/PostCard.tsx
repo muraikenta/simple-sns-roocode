@@ -10,22 +10,15 @@ import {
 } from "@/components/ui/card";
 import DeletePostButton from "@/components/posts/DeletePostButton";
 import UserAvatar from "@/components/users/UserAvatar";
+import { PostWithUser } from "@/types/models";
 
-export interface PostData {
-  id: string;
-  created_at: string;
-  updated_at?: string;
-  title: string;
-  content: string;
-  user_id: string;
-  username?: string;
-  avatar_url?: string | null;
-}
+// 後方互換性のため残しておく（将来的には削除予定）
+export type PostData = PostWithUser;
 
 interface PostCardProps {
-  post: PostData;
+  post: PostWithUser;
   currentUserId?: string | null;
-  onEdit?: (post: PostData) => void;
+  onEdit?: (post: PostWithUser) => void;
   onDeleteSuccess?: () => void;
   showAuthor?: boolean;
 }

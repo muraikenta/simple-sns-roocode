@@ -13,6 +13,7 @@ import {
 import { Eye, EyeOff } from "lucide-react";
 import { useErrorDialog } from "../contexts/ErrorDialogContext";
 import RepositoryFactory from "@/repositories/factory";
+import { UserValidation } from "@/types/models";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -23,13 +24,10 @@ const SignUpPage = () => {
   const [loading, setLoading] = useState(false);
   const { showError } = useErrorDialog();
 
-  // バリデーション
-  const isUsernameValid = username.trim() !== "" && username.length <= 20;
-  const isEmailValid =
-    /^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$/.test(
-      email
-    );
-  const isPasswordValid = password.length >= 8;
+  // バリデーション（モデルのバリデーション関数を使用）
+  const isUsernameValid = UserValidation.isUsernameValid(username);
+  const isEmailValid = UserValidation.isEmailValid(email);
+  const isPasswordValid = UserValidation.isPasswordValid(password);
   const isFormValid = isUsernameValid && isEmailValid && isPasswordValid;
 
   const authRepository = RepositoryFactory.getAuthRepository();

@@ -4,24 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useErrorDialog } from "@/contexts/ErrorDialogContext";
 import { useAuthCheck } from "@/lib/hooks/useAuthCheck";
-import PostCard, { PostData } from "@/components/posts/PostCard";
+import PostCard from "@/components/posts/PostCard";
 import UserProfileCard from "@/components/users/UserProfileCard";
 import PageHeader from "@/components/layout/PageHeader";
 import RepositoryFactory from "@/repositories/factory";
-// User型は内部で定義しているのでimport不要
-
-interface UserProfile {
-  id: string;
-  username: string;
-  avatar_url: string | null;
-  bio: string | null;
-}
+import { User, Post, PostWithUser } from "@/types/models";
 
 const UserDetailPage = () => {
   const { userId } = useParams();
   const { user, loading } = useAuthCheck();
-  const [posts, setPosts] = useState<PostData[]>([]);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [profile, setProfile] = useState<User | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const { showError } = useErrorDialog();
 
@@ -116,7 +109,7 @@ const UserDetailPage = () => {
                 ...post,
                 username: profile.username,
                 avatar_url: profile.avatar_url
-              }}
+              } as PostWithUser}
               currentUserId={user?.id}
               onDeleteSuccess={fetchUserData}
               showAuthor={false}
