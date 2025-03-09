@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "@supabase/supabase-js";
 
 export async function getUserId(req: Request): Promise<string | null> {
   const authHeader = req.headers.get("Authorization");

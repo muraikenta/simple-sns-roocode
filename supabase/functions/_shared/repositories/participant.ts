@@ -1,18 +1,17 @@
 import { BaseRepository } from "./base.ts";
 import {
   ConversationParticipant,
+  conversationParticipants,
   NewConversationParticipant,
 } from "../db/schema.ts";
+import { and, eq } from "drizzle-orm";
 
 export class ParticipantRepository extends BaseRepository {
   // 参加者の追加
   async addParticipants(
     participants: NewConversationParticipant[]
   ): Promise<void> {
-    await this.db
-      .insertInto("conversation_participants")
-      .values(participants)
-      .execute();
+    await this.db.insert(conversationParticipants).values(participants);
   }
 
   // 会話の参加者を取得
@@ -20,10 +19,9 @@ export class ParticipantRepository extends BaseRepository {
     conversationId: string
   ): Promise<ConversationParticipant[]> {
     return await this.db
-      .selectFrom("conversation_participants")
-      .selectAll()
-      .where("conversation_id", "=", conversationId)
-      .execute();
+      .select()
+      .from(conversationParticipants)
+      .where(eq(conversationParticipants.conversation_id, conversationId));
   }
 
   // ユーザーが会話に参加しているか確認
@@ -32,12 +30,16 @@ export class ParticipantRepository extends BaseRepository {
     userId: string
   ): Promise<boolean> {
     const participant = await this.db
-      .selectFrom("conversation_participants")
-      .select("id")
-      .where("conversation_id", "=", conversationId)
-      .where("user_id", "=", userId)
-      .executeTakeFirst();
+      .select({ id: conversationParticipants.id })
+      .from(conversationParticipants)
+      .where(
+        and(
+          eq(conversationParticipants.conversation_id, conversationId),
+          eq(conversationParticipants.user_id, userId)
+        )
+      )
+      .limit(1);
 
-    return !!participant;
+    return participant.length > 0;
   }
 }

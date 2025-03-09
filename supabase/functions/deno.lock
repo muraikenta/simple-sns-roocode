@@ -1,0 +1,24 @@
+{
+  "version": "4",
+  "specifiers": {
+    "npm:drizzle-orm@0.29.1": "0.29.1_postgres@3.4.3",
+    "npm:postgres@3.4.3": "3.4.3"
+  },
+  "npm": {
+    "drizzle-orm@0.29.1_postgres@3.4.3": {
+      "integrity": "sha512-yItc4unfHnk8XkDD3/bdC63vdboTY7e7I03lCF1OJYABXSIfQYU9BFTQJXMMovVeb3T1/OJWwfW/70T1XPnuUA==",
+      "dependencies": [
+        "postgres"
+      ]
+    },
+    "postgres@3.4.3": {
+      "integrity": "sha512-iHJn4+M9vbTdHSdDzNkC0crHq+1CUdFhx+YqCE+SqWxPjm+Zu63jq7yZborOBF64c8pc58O5uMudyL1FQcHacA=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:drizzle-orm@0.29.1",
+      "npm:postgres@3.4.3"
+    ]
+  }
+}

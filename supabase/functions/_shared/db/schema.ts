@@ -1,57 +1,97 @@
-import {
-  Generated,
-  Insertable,
-  Selectable,
-  Updateable,
-} from "https://esm.sh/kysely@0.27.6";
+import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
-export interface Database {
-  conversations: ConversationsTable;
-  conversation_participants: ConversationParticipantsTable;
-  messages: MessagesTable;
-  users: UsersTable;
-}
+// テーブル定義
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey(),
+  username: text("username").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
 
-export interface ConversationsTable {
-  id: Generated<string>;
-  created_at: Generated<Date>;
-  updated_at: Generated<Date>;
-}
+export const conversations = pgTable("conversations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
 
-export interface ConversationParticipantsTable {
-  id: Generated<string>;
-  conversation_id: string;
-  user_id: string;
-  created_at: Generated<Date>;
-}
+export const conversationParticipants = pgTable("conversation_participants", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversation_id: uuid("conversation_id")
+    .notNull()
+    .references(() => conversations.id),
+  user_id: uuid("user_id")
+    .notNull()
+    .references(() => users.id),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
 
-export interface MessagesTable {
-  id: Generated<string>;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  created_at: Generated<Date>;
-  is_read: boolean;
-}
+export const messages = pgTable("messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  conversation_id: uuid("conversation_id")
+    .notNull()
+    .references(() => conversations.id),
+  sender_id: uuid("sender_id")
+    .notNull()
+    .references(() => users.id),
+  content: text("content").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  is_read: boolean("is_read").default(false).notNull(),
+});
 
-export interface UsersTable {
-  id: string;
-  username: string;
-  created_at: Generated<Date>;
-  updated_at: Generated<Date>;
-}
+// リレーションシップ定義
+export const usersRelations = relations(users, ({ many }) => ({
+  participations: many(conversationParticipants),
+  messages: many(messages),
+}));
 
-// 型エイリアス
-export type Conversation = Selectable<ConversationsTable>;
-export type NewConversation = Insertable<ConversationsTable>;
-export type ConversationUpdate = Updateable<ConversationsTable>;
+export const conversationsRelations = relations(
+  conversations,
+  ({ many }) => ({
+    participants: many(conversationParticipants),
+    messages: many(messages),
+  }),
+);
 
-export type ConversationParticipant = Selectable<ConversationParticipantsTable>;
+export const conversationParticipantsRelations = relations(
+  conversationParticipants,
+  ({ one }) => ({
+    conversation: one(conversations, {
+      fields: [conversationParticipants.conversation_id],
+      references: [conversations.id],
+    }),
+    user: one(users, {
+      fields: [conversationParticipants.user_id],
+      references: [users.id],
+    }),
+  }),
+);
+
+export const messagesRelations = relations(
+  messages,
+  ({ one }) => ({
+    conversation: one(conversations, {
+      fields: [messages.conversation_id],
+      references: [conversations.id],
+    }),
+    sender: one(users, {
+      fields: [messages.sender_id],
+      references: [users.id],
+    }),
+  }),
+);
+
+// 型定義
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
+export type Conversation = typeof conversations.$inferSelect;
+export type NewConversation = typeof conversations.$inferInsert;
+
+export type ConversationParticipant =
+  typeof conversationParticipants.$inferSelect;
 export type NewConversationParticipant =
-  Insertable<ConversationParticipantsTable>;
+  typeof conversationParticipants.$inferInsert;
 
-export type Message = Selectable<MessagesTable>;
-export type NewMessage = Insertable<MessagesTable>;
-export type MessageUpdate = Updateable<MessagesTable>;
-
-export type User = Selectable<UsersTable>;
+export type Message = typeof messages.$inferSelect;
+export type NewMessage = typeof messages.$inferInsert;

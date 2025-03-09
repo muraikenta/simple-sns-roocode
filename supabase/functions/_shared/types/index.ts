@@ -3,7 +3,7 @@ export interface ApiResponse<T> {
   data?: T;
   error?: {
     message: string;
-    details?: any;
+    details?: Record<string, unknown>;
   };
 }
 

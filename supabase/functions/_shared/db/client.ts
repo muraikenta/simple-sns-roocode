@@ -1,12 +1,11 @@
-import { Kysely } from "https://esm.sh/kysely@0.27.6";
-import { PostgresDialect } from "https://esm.sh/kysely@0.27.6/dist/esm/dialect/postgres/postgres-dialect.js";
-import { Pool } from "https://deno.land/x/postgres@v0.17.0/mod.ts";
-import { Database } from "./schema.ts";
+import postgres from "npm:postgres@3.4.3";
+import { drizzle } from "drizzle-orm/postgres-js";
+import * as schema from "./schema.ts";
 
 // シングルトンインスタンス
-let dbInstance: Kysely<Database> | null = null;
+let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
-export function getDb(): Kysely<Database> {
+export function getDb() {
   if (dbInstance) return dbInstance;
 
   // 環境変数から接続情報を取得
@@ -16,41 +15,10 @@ export function getDb(): Kysely<Database> {
   }
 
   // PostgreSQLクライアントの設定
-  const pool = new Pool(connectionString, 10, true);
+  const client = postgres(connectionString, { prepare: false });
 
-  // Kyselyインスタンスの作成
-  dbInstance = new Kysely<Database>({
-    dialect: new PostgresDialect({
-      pool: {
-        async connect() {
-          const connection = await pool.connect();
-          return {
-            async query(sql, parameters) {
-              const result = await connection.queryObject(sql, parameters);
-              return {
-                rows: result.rows,
-              };
-            },
-            async release() {
-              connection.release();
-            },
-          };
-        },
-        async destroy() {
-          await pool.end();
-        },
-      },
-    }),
-    log: (event) => {
-      if (event.level == "query") {
-        const q = event.query;
-        const time = Math.round(event.queryDurationMillis * 100) / 100;
-        console.log(
-          `\u001b[34mkysely:sql\u001b[0m [${q.sql}] parameters: [${q.parameters}] time: ${time}`
-        );
-      }
-    },
-  });
+  // Drizzleインスタンスの作成
+  dbInstance = drizzle(client, { schema });
 
   return dbInstance;
 }

@@ -26,7 +26,7 @@ export class CreateConversationUseCase extends BaseUseCase<
 
   async execute(
     params: CreateConversationRequest,
-    userId: string
+    userId: string,
   ): Promise<CreateConversationResponse> {
     const { participant_ids } = params;
 
@@ -40,34 +40,33 @@ export class CreateConversationUseCase extends BaseUseCase<
     participantIds = [...new Set(participantIds)];
 
     // ユーザーIDの検証
-    const { valid: validUserIds, invalid: invalidUserIds } =
-      await this.userRepo.validateUserIds(participantIds);
+    const { valid: validUserIds, invalid: invalidUserIds } = await this.userRepo
+      .validateUserIds(participantIds);
 
     if (invalidUserIds.length > 0) {
       throw new Error(`Invalid user IDs: ${invalidUserIds.join(", ")}`);
     }
 
     // トランザクションを使用して会話と参加者を作成
-    return await getDb()
-      .transaction()
-      .execute(async (trx) => {
-        // トランザクション用のリポジトリを作成
-        const txConversationRepo = new ConversationRepository(trx);
-        const txParticipantRepo = new ParticipantRepository(trx);
+    const db = getDb();
+    return await db.transaction(async (tx: ReturnType<typeof getDb>) => {
+      // トランザクション用のリポジトリを作成
+      const txConversationRepo = new ConversationRepository(tx);
+      const txParticipantRepo = new ParticipantRepository(tx);
 
-        // 新しい会話を作成
-        const conversation = await txConversationRepo.create();
-        const conversationId = conversation.id;
+      // 新しい会話を作成
+      const conversation = await txConversationRepo.create();
+      const conversationId = conversation.id;
 
-        // 参加者を追加
-        const participantInserts = validUserIds.map((userId) => ({
-          conversation_id: conversationId,
-          user_id: userId,
-        }));
+      // 参加者を追加
+      const participantInserts = validUserIds.map((userId) => ({
+        conversation_id: conversationId,
+        user_id: userId,
+      }));
 
-        await txParticipantRepo.addParticipants(participantInserts);
+      await txParticipantRepo.addParticipants(participantInserts);
 
-        return { id: conversationId };
-      });
+      return { id: conversationId };
+    });
   }
 }

@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "drizzle-orm": "npm:drizzle-orm@0.29.1",
+    "drizzle-orm/pg-core": "npm:drizzle-orm@0.29.1/pg-core",
+    "drizzle-orm/postgres-js": "npm:drizzle-orm@0.29.1/postgres-js",
+    "postgres": "npm:postgres@3.4.3",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.49.1",
+    "std/http/server": "https://deno.land/std@0.177.0/http/server.ts"
+  }
+}

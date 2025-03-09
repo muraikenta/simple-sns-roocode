@@ -3,7 +3,7 @@ import { corsHeaders } from "./cors.ts";
 
 export function createSuccessResponse<T>(
   data: T,
-  status: number = 200
+  status: number = 200,
 ): Response {
   const response = data;
   return new Response(JSON.stringify(response), {
@@ -15,7 +15,7 @@ export function createSuccessResponse<T>(
 export function createErrorResponse(
   message: string,
   status: number = 400,
-  details?: any
+  details?: Record<string, unknown>,
 ): Response {
   const response: ApiResponse<null> = {
     error: { message, details },

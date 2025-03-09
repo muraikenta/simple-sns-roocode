@@ -21,11 +21,12 @@ export class CreateConversationController extends BaseController<
   }
 
   protected async parseRequest(
-    req: Request
+    req: Request,
   ): Promise<CreateConversationRequest> {
     try {
       return await req.json();
     } catch (error) {
+      console.error("Error parsing request body:", error);
       throw new Error("Invalid JSON in request body");
     }
   }
@@ -46,7 +47,7 @@ export class CreateConversationController extends BaseController<
 
   protected async executeUseCase(
     data: CreateConversationRequest,
-    userId: string
+    userId: string,
   ): Promise<CreateConversationResponse> {
     return await this.useCase.execute(data, userId);
   }

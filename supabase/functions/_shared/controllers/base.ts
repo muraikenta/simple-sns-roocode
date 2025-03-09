@@ -1,9 +1,8 @@
-import { ApiResponse } from "../types/index.ts";
 import { corsHeaders } from "../helpers/cors.ts";
 import { getUserId } from "../helpers/auth.ts";
 import {
-  createSuccessResponse,
   createErrorResponse,
+  createSuccessResponse,
 } from "../helpers/response.ts";
 
 export abstract class BaseController<TRequest, TResponse> {
@@ -40,7 +39,11 @@ export abstract class BaseController<TRequest, TResponse> {
       return createSuccessResponse(result);
     } catch (error) {
       console.error(`Error in ${this.constructor.name}:`, error);
-      return createErrorResponse(error.message, 500);
+      if (error instanceof Error) {
+        return createErrorResponse(error.message, 500);
+      } else {
+        return createErrorResponse("An error occurred", 500);
+      }
     }
   }
 
@@ -56,6 +59,6 @@ export abstract class BaseController<TRequest, TResponse> {
   // ユースケースの実行
   protected abstract executeUseCase(
     data: TRequest,
-    userId: string
+    userId: string,
   ): Promise<TResponse>;
 }

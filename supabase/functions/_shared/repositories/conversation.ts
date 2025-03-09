@@ -1,24 +1,23 @@
 import { BaseRepository } from "./base.ts";
-import { Conversation, NewConversation } from "../db/schema.ts";
+import { Conversation, conversations } from "../db/schema.ts";
+import { eq } from "drizzle-orm";
 
 export class ConversationRepository extends BaseRepository {
   // 会話の作成
   async create(): Promise<Conversation> {
-    const result = await this.db
-      .insertInto("conversations")
-      .defaultValues()
-      .returning(["id", "created_at", "updated_at"])
-      .execute();
+    const result = await this.db.insert(conversations).values({}).returning();
 
-    return result[0] as Conversation;
+    return result[0];
   }
 
   // 会話の取得
   async getById(id: string): Promise<Conversation | undefined> {
-    return await this.db
-      .selectFrom("conversations")
-      .selectAll()
-      .where("id", "=", id)
-      .executeTakeFirst();
+    const result = await this.db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, id))
+      .limit(1);
+
+    return result[0];
   }
 }

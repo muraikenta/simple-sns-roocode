@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { serve } from "std/http/server";
 import { CreateConversationController } from "./controller.ts";
 
 const controller = new CreateConversationController();
