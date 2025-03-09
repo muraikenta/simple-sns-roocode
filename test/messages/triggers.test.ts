@@ -49,7 +49,7 @@ describe("Messages Triggers", () => {
         .eq("id", conversationId)
         .single();
 
-      const initialUpdatedAt = new Date(initialConversation.updated_at).getTime();
+      const initialUpdatedAt = new Date(initialConversation!.updated_at).getTime();
 
       // Wait a bit longer to ensure time difference
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -67,7 +67,7 @@ describe("Messages Triggers", () => {
         .eq("id", conversationId)
         .single();
 
-      const updatedTimestamp = new Date(updatedConversation.updated_at).getTime();
+      const updatedTimestamp = new Date(updatedConversation!.updated_at).getTime();
 
       // Verify that the updated_at timestamp has been updated
       // テスト環境によって精度が異なる場合があるため、厳密な比較からコメント確認に切り替え
