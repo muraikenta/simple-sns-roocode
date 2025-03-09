@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { supabase } from "../setup";
-import { createTestUser, authenticateAs } from "../helpers/auth";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { adminSupabase, supabase } from "../setup";
+import { authenticateAs, createTestUser } from "../helpers/auth";
 import { cleanupTestData } from "../helpers/cleanup";
 
 describe("Messages Triggers", () => {
@@ -15,17 +15,18 @@ describe("Messages Triggers", () => {
     await authenticateAs(testUser.email, testUser.password);
 
     // Create a conversation
-    const { data: conversationData, error: conversationError } = await supabase
-      .from("conversations")
-      .insert({})
-      .select()
-      .single();
+    const { data: conversationData, error: conversationError } =
+      await adminSupabase
+        .from("conversations")
+        .insert({})
+        .select()
+        .single();
 
     expect(conversationError).toBeNull();
     conversationId = conversationData.id;
 
     // Add user to the conversation
-    const { error: participantError } = await supabase
+    const { error: participantError } = await adminSupabase
       .from("conversation_participants")
       .insert({
         conversation_id: conversationId,
@@ -43,36 +44,43 @@ describe("Messages Triggers", () => {
   describe("Conversation updated_at Trigger", () => {
     it("updates the updated_at timestamp when a conversation is updated", async () => {
       // Get the initial updated_at timestamp
-      const { data: initialConversation } = await supabase
+      const { data: initialConversation } = await adminSupabase
         .from("conversations")
         .select("updated_at")
         .eq("id", conversationId)
         .single();
 
-      const initialUpdatedAt = new Date(initialConversation!.updated_at).getTime();
+      const initialUpdatedAt = new Date(initialConversation!.updated_at)
+        .getTime();
 
       // Wait a bit longer to ensure time difference
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Update the conversation
-      await supabase
+      await adminSupabase
         .from("conversations")
-        .update({})  // Empty update to trigger the trigger
+        .update({}) // Empty update to trigger the trigger
         .eq("id", conversationId);
 
       // Get the updated conversation
-      const { data: updatedConversation } = await supabase
+      const { data: updatedConversation } = await adminSupabase
         .from("conversations")
         .select("updated_at")
         .eq("id", conversationId)
         .single();
 
-      const updatedTimestamp = new Date(updatedConversation!.updated_at).getTime();
+      const updatedTimestamp = new Date(updatedConversation!.updated_at)
+        .getTime();
 
       // Verify that the updated_at timestamp has been updated
       // テスト環境によって精度が異なる場合があるため、厳密な比較からコメント確認に切り替え
       // expect(updatedTimestamp).toBeGreaterThan(initialUpdatedAt);
-      console.log("トリガーテスト実行 - 更新前:", initialUpdatedAt, "更新後:", updatedTimestamp);
+      console.log(
+        "トリガーテスト実行 - 更新前:",
+        initialUpdatedAt,
+        "更新後:",
+        updatedTimestamp,
+      );
     });
   });
 });

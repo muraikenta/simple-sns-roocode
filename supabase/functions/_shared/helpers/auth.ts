@@ -12,12 +12,12 @@ export async function getUserId(req: Request): Promise<string | null> {
   // JWTからユーザーIDを取得
   const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
   const supabaseServiceKey = Deno.env.get(
-    "SUPABASE_SERVICE_ROLE_KEY"
+    "SUPABASE_SERVICE_ROLE_KEY",
   ) as string;
 
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error(
-      "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required"
+      "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required",
     );
   }
 
