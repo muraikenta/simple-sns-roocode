@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { adminSupabase, supabase } from "../setup";
+import { adminSupabase } from "../setup";
 import { authenticateAs, createTestUser } from "../helpers/auth";
 import { cleanupTestData } from "../helpers/cleanup";
 
