@@ -12,8 +12,14 @@ export interface IUserRepository {
 export interface IPostRepository {
   getAllPosts(): Promise<PostWithUser[]>;
   getPostsByUserId(userId: string): Promise<Post[]>;
-  createPost(postData: Omit<Post, "id" | "created_at" | "updated_at">): Promise<Post>;
-  updatePost(postId: string, userId: string, postData: Partial<Post>): Promise<void>;
+  createPost(
+    postData: Omit<Post, "id" | "created_at" | "updated_at">
+  ): Promise<Post>;
+  updatePost(
+    postId: string,
+    userId: string,
+    postData: Partial<Post>
+  ): Promise<void>;
   deletePost(postId: string, userId: string): Promise<void>;
 }
 
@@ -21,7 +27,11 @@ export interface IPostRepository {
 export interface IAuthRepository {
   getCurrentUser(): Promise<SupabaseUser | null>;
   signIn(email: string, password: string): Promise<SupabaseUser | null>;
-  signUp(email: string, password: string, username: string): Promise<SupabaseUser | null>;
+  signUp(
+    email: string,
+    password: string,
+    username: string
+  ): Promise<SupabaseUser | null>;
   signOut(): Promise<void>;
   onAuthStateChange(callback: (user: SupabaseUser | null) => void): () => void;
 }
@@ -31,4 +41,18 @@ export interface IStorageRepository {
   uploadFile(bucket: string, path: string, file: File): Promise<string>;
   getFileUrl(bucket: string, path: string): string;
   deleteFile(bucket: string, path: string): Promise<void>;
+}
+
+// メッセージリポジトリのインターフェース
+export interface IMessageRepository {
+  createConversation(participantIds: string[]): Promise<string>;
+  addParticipant(conversationId: string, userId: string): Promise<void>;
+  sendMessage(conversationId: string, content: string): Promise<string>;
+  markMessagesAsRead(conversationId: string): Promise<void>;
+  getUserConversations(): Promise<any>;
+  getConversationMessages(
+    conversationId: string,
+    limit?: number,
+    offset?: number
+  ): Promise<any>;
 }

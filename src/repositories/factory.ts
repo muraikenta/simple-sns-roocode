@@ -1,8 +1,15 @@
-import { IUserRepository, IPostRepository, IAuthRepository, IStorageRepository } from "./interfaces";
+import {
+  IUserRepository,
+  IPostRepository,
+  IAuthRepository,
+  IStorageRepository,
+  IMessageRepository,
+} from "./interfaces";
 import { SupabaseUserRepository } from "./supabase/UserRepository";
 import { SupabasePostRepository } from "./supabase/PostRepository";
 import { SupabaseAuthRepository } from "./supabase/AuthRepository";
 import { SupabaseStorageRepository } from "./supabase/StorageRepository";
+import { MessageRepository } from "./supabase/MessageRepository";
 
 // リポジトリのインスタンスを一元管理するシングルトンファクトリ
 class RepositoryFactory {
@@ -10,6 +17,7 @@ class RepositoryFactory {
   private static postRepository: IPostRepository;
   private static authRepository: IAuthRepository;
   private static storageRepository: IStorageRepository;
+  private static messageRepository: IMessageRepository;
 
   // ユーザーリポジトリのインスタンスを取得
   static getUserRepository(): IUserRepository {
@@ -43,6 +51,14 @@ class RepositoryFactory {
     return this.storageRepository;
   }
 
+  // メッセージリポジトリのインスタンスを取得
+  static getMessageRepository(): IMessageRepository {
+    if (!this.messageRepository) {
+      this.messageRepository = new MessageRepository();
+    }
+    return this.messageRepository;
+  }
+
   // テスト用にリポジトリをモックに置き換えるメソッド
   static setUserRepository(repository: IUserRepository): void {
     this.userRepository = repository;
@@ -58,6 +74,10 @@ class RepositoryFactory {
 
   static setStorageRepository(repository: IStorageRepository): void {
     this.storageRepository = repository;
+  }
+
+  static setMessageRepository(repository: IMessageRepository): void {
+    this.messageRepository = repository;
   }
 }
 
