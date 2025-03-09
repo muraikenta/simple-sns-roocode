@@ -8,7 +8,7 @@ import RepositoryFactory from "@/repositories/factory";
 
 interface DeletePostButtonProps {
   postId: string;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 const DeletePostButton = ({ postId, onSuccess }: DeletePostButtonProps) => {
@@ -21,13 +21,15 @@ const DeletePostButton = ({ postId, onSuccess }: DeletePostButtonProps) => {
 
   const handleDelete = async () => {
     if (!user) return;
-    
+
     setLoading(true);
 
     try {
       // リポジトリを使用して投稿を削除
       await postRepository.deletePost(postId, user.id); // ユーザーIDも渡してRLSポリシーを遵守
-      onSuccess();
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err: unknown) {
       const errorMsg =
         err instanceof Error

@@ -2,6 +2,7 @@ import {
   ConversationWithParticipants,
   MessageWithSender,
   Post,
+  PostInsert,
   PostWithUser,
   User,
 } from "@/types/models";
@@ -11,16 +12,13 @@ import { User as SupabaseUser } from "@supabase/supabase-js";
 export interface IUserRepository {
   getUserById(userId: string): Promise<User | null>;
   updateUser(userId: string, userData: Partial<User>): Promise<void>;
-  getUserByEmail(email: string): Promise<User | null>;
 }
 
 // 投稿リポジトリのインターフェース
 export interface IPostRepository {
   getAllPosts(): Promise<PostWithUser[]>;
   getPostsByUserId(userId: string): Promise<Post[]>;
-  createPost(
-    postData: Omit<Post, "id" | "created_at" | "updated_at">,
-  ): Promise<Post>;
+  createPost(postData: PostInsert): Promise<Post>;
   updatePost(
     postId: string,
     userId: string,

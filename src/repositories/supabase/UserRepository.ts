@@ -42,26 +42,4 @@ export class SupabaseUserRepository implements IUserRepository {
       throw error;
     }
   }
-
-  async getUserByEmail(email: string): Promise<User | null> {
-    try {
-      // Supabaseでは直接emailでusersテーブルを検索できないため
-      // authユーザーを取得してからuser_idを用いてusersテーブルを検索する
-      const { data: authData, error: authError } = await supabase
-        .from("auth.users")
-        .select("id")
-        .eq("email", email)
-        .single();
-
-      if (authError || !authData) {
-        console.error("Error fetching auth user:", authError);
-        return null;
-      }
-
-      return this.getUserById(authData.id);
-    } catch (error) {
-      console.error("Error in getUserByEmail:", error);
-      return null;
-    }
-  }
 }

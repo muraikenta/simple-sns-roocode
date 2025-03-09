@@ -1,12 +1,26 @@
-// ユーザー関連の型定義
-export interface User {
-  id: string;
-  created_at: string;
-  updated_at: string | null;
-  username: string;
-  avatar_url: string | null;
-  bio: string | null;
-}
+// Supabaseの生成型をインポート
+import { Database } from "./supabase";
+
+// 基本型のエイリアス
+export type User = Database["public"]["Tables"]["users"]["Row"];
+export type Post = Database["public"]["Tables"]["posts"]["Row"];
+export type Message =
+  & Omit<Database["public"]["Tables"]["messages"]["Row"], "is_read">
+  & { read: boolean };
+export type Conversation = Database["public"]["Tables"]["conversations"]["Row"];
+export type Participant =
+  Database["public"]["Tables"]["conversation_participants"]["Row"];
+
+// 挿入・更新用の型
+export type UserInsert = Database["public"]["Tables"]["users"]["Insert"];
+export type PostInsert = Database["public"]["Tables"]["posts"]["Insert"];
+export type MessageInsert =
+  & Omit<Database["public"]["Tables"]["messages"]["Insert"], "is_read">
+  & { read?: boolean };
+export type ConversationInsert =
+  Database["public"]["Tables"]["conversations"]["Insert"];
+export type ParticipantInsert =
+  Database["public"]["Tables"]["conversation_participants"]["Insert"];
 
 // ユーザーに関するバリデーション関数
 export const UserValidation = {
@@ -21,16 +35,6 @@ export const UserValidation = {
     return password.length >= 8;
   },
 };
-
-// 投稿関連の型定義
-export interface Post {
-  id: string;
-  created_at: string;
-  updated_at: string | null;
-  title: string;
-  content: string;
-  user_id: string;
-}
 
 // 投稿に関するバリデーション関数と定数
 export const PostConstants = {
@@ -57,33 +61,6 @@ export const PostValidation = {
 export interface PostWithUser extends Post {
   username: string;
   avatar_url: string | null;
-}
-
-// メッセージ関連の型定義
-export interface Message {
-  id: string;
-  created_at: string;
-  updated_at: string | null;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  read: boolean;
-}
-
-// 会話参加者の型定義
-export interface Participant {
-  id: string;
-  created_at: string;
-  updated_at: string | null;
-  conversation_id: string;
-  user_id: string;
-}
-
-// 会話の型定義
-export interface Conversation {
-  id: string;
-  created_at: string;
-  updated_at: string | null;
 }
 
 // 会話情報と参加者情報を合わせた拡張型

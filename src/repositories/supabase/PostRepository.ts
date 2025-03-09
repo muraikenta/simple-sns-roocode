@@ -47,7 +47,9 @@ export class SupabasePostRepository implements IPostRepository {
     }
   }
 
-  async createPost(postData: Omit<Post, "id" | "created_at" | "updated_at">): Promise<Post> {
+  async createPost(
+    postData: Omit<Post, "id" | "created_at" | "updated_at">,
+  ): Promise<Post> {
     try {
       const { data, error } = await supabase
         .from("posts")
@@ -67,7 +69,11 @@ export class SupabasePostRepository implements IPostRepository {
     }
   }
 
-  async updatePost(postId: string, userId: string, postData: Partial<Post>): Promise<void> {
+  async updatePost(
+    postId: string,
+    userId: string,
+    postData: Partial<Post>,
+  ): Promise<void> {
     try {
       const { error } = await supabase
         .from("posts")
