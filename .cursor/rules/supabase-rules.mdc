@@ -1,3 +1,8 @@
+---
+description: Supabase 関連ルール
+globs: 
+alwaysApply: false
+---
 # Supabase 関連ルール
 
 ## コマンド実行
@@ -12,7 +17,7 @@ npx supabase migration up
 
 ## マイグレーション
 
-データベーススキーマの管理は [Supabase の宣言的なデータベーススキーマアプローチ](https://supabase.com/docs/guides/local-development/declarative-database-schemas) に従って進めてください。
+データベーススキーマの管理は [Supabase の宣言的なデータベーススキーマアプローチ](mdc:https:/supabase.com/docs/guides/local-development/declarative-database-schemas) に従って進めてください。
 
 ### スキーマファイル
 
