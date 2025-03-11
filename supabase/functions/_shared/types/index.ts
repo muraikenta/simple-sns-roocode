@@ -37,6 +37,9 @@ export interface SendMessageRequest {
 // メッセージ送信レスポンス
 export interface SendMessageResponse {
   id: string;
+  content: string;
+  sender_id: string;
+  conversation_id: string;
 }
 
 // メッセージ既読リクエスト
