@@ -36,6 +36,24 @@ BEFORE UPDATE ON public.conversations
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
+-- メッセージが挿入されたときに会話のupdated_atを更新するトリガー
+CREATE TRIGGER update_conversation_on_message_insert
+AFTER INSERT ON public.messages
+FOR EACH ROW
+EXECUTE FUNCTION public.update_conversation_updated_at();
+
+-- メッセージが更新されたときに会話のupdated_atを更新するトリガー
+CREATE TRIGGER update_conversation_on_message_update
+AFTER UPDATE ON public.messages
+FOR EACH ROW
+EXECUTE FUNCTION public.update_conversation_updated_at();
+
+-- メッセージが削除されたときに会話のupdated_atを更新するトリガー
+CREATE TRIGGER update_conversation_on_message_delete
+AFTER DELETE ON public.messages
+FOR EACH ROW
+EXECUTE FUNCTION public.update_conversation_updated_at_on_delete();
+
 -- 全てのテーブルのRLSを有効化（API経由でのみアクセス可能）
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversation_participants ENABLE ROW LEVEL SECURITY;
