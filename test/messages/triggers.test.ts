@@ -3,84 +3,165 @@ import { adminSupabase } from "../setup";
 import { authenticateAs, createTestUser } from "../helpers/auth";
 import { cleanupTestData } from "../helpers/cleanup";
 
-describe("Messages Triggers", () => {
-  let testUser: { id: string; email: string; password: string };
+describe("メッセージトリガー", () => {
+  let testUser1: { id: string; email: string; password: string };
+  let testUser2: { id: string; email: string; password: string };
   let conversationId: string;
+  let messageId: string;
 
   beforeEach(async () => {
-    // Create test user
-    testUser = await createTestUser();
+    // テストユーザーの作成
+    testUser1 = await createTestUser();
+    testUser2 = await createTestUser();
 
-    // Authenticate as test user
-    await authenticateAs(testUser.email, testUser.password);
+    // 認証
+    await authenticateAs(testUser1.email, testUser1.password);
 
-    // Create a conversation
-    const { data: conversationData, error: conversationError } =
-      await adminSupabase
-        .from("conversations")
-        .insert({})
+    // 会話の作成
+    const { data: conversationData } = await adminSupabase
+      .from("conversations")
+      .insert({})
+      .select()
+      .single();
+
+    if (conversationData) {
+      conversationId = conversationData.id;
+
+      // 参加者の追加
+      await adminSupabase.from("conversation_participants").insert([
+        { conversation_id: conversationId, user_id: testUser1.id },
+        { conversation_id: conversationId, user_id: testUser2.id },
+      ]);
+
+      // メッセージの作成
+      const { data: messageData } = await adminSupabase
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          sender_id: testUser1.id,
+          content: "テストメッセージ",
+        })
         .select()
         .single();
 
-    expect(conversationError).toBeNull();
-    conversationId = conversationData.id;
-
-    // Add user to the conversation
-    const { error: participantError } = await adminSupabase
-      .from("conversation_participants")
-      .insert({
-        conversation_id: conversationId,
-        user_id: testUser.id,
-      });
-
-    expect(participantError).toBeNull();
+      if (messageData) {
+        messageId = messageData.id;
+      }
+    }
   });
 
   afterEach(async () => {
-    // Clean up test data
-    await cleanupTestData([testUser.id]);
-  });
+    // テストデータのクリーンアップ
+    if (conversationId) {
+      await adminSupabase
+        .from("messages")
+        .delete()
+        .eq("conversation_id", conversationId);
 
-  describe("Conversation updated_at Trigger", () => {
-    it("updates the updated_at timestamp when a conversation is updated", async () => {
-      // Get the initial updated_at timestamp
-      const { data: initialConversation } = await adminSupabase
-        .from("conversations")
-        .select("updated_at")
-        .eq("id", conversationId)
-        .single();
+      await adminSupabase
+        .from("conversation_participants")
+        .delete()
+        .eq("conversation_id", conversationId);
 
-      const initialUpdatedAt = new Date(initialConversation!.updated_at)
-        .getTime();
-
-      // Wait a bit longer to ensure time difference
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Update the conversation
       await adminSupabase
         .from("conversations")
-        .update({}) // Empty update to trigger the trigger
+        .delete()
         .eq("id", conversationId);
+    }
 
-      // Get the updated conversation
-      const { data: updatedConversation } = await adminSupabase
+    await cleanupTestData([testUser1.id, testUser2.id]);
+  });
+
+  describe("update_conversation_updated_at トリガー", () => {
+    it("メッセージが挿入されたとき、会話のupdated_atが更新される", async () => {
+      // 現在の会話のupdated_atを取得
+      const { data: conversationBefore } = await adminSupabase
         .from("conversations")
         .select("updated_at")
         .eq("id", conversationId)
         .single();
 
-      const updatedTimestamp = new Date(updatedConversation!.updated_at)
-        .getTime();
+      // 少し待機
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Verify that the updated_at timestamp has been updated
-      // テスト環境によって精度が異なる場合があるため、厳密な比較からコメント確認に切り替え
-      // expect(updatedTimestamp).toBeGreaterThan(initialUpdatedAt);
-      console.log(
-        "トリガーテスト実行 - 更新前:",
-        initialUpdatedAt,
-        "更新後:",
-        updatedTimestamp,
-      );
+      // 新しいメッセージを挿入
+      await adminSupabase.from("messages").insert({
+        conversation_id: conversationId,
+        sender_id: testUser1.id,
+        content: "新しいテストメッセージ",
+      });
+
+      // 更新後の会話のupdated_atを取得
+      const { data: conversationAfter } = await adminSupabase
+        .from("conversations")
+        .select("updated_at")
+        .eq("id", conversationId)
+        .single();
+
+      // updated_atが更新されていることを確認
+      const beforeTime = new Date(conversationBefore?.updated_at || "")
+        .getTime();
+      const afterTime = new Date(conversationAfter?.updated_at || "").getTime();
+      expect(afterTime).toBeGreaterThan(beforeTime);
+    });
+
+    it("メッセージが更新されたとき、会話のupdated_atが更新される", async () => {
+      // 現在の会話のupdated_atを取得
+      const { data: conversationBefore } = await adminSupabase
+        .from("conversations")
+        .select("updated_at")
+        .eq("id", conversationId)
+        .single();
+
+      // 少し待機
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // メッセージを更新
+      await adminSupabase
+        .from("messages")
+        .update({ content: "更新されたテストメッセージ" })
+        .eq("id", messageId);
+
+      // 更新後の会話のupdated_atを取得
+      const { data: conversationAfter } = await adminSupabase
+        .from("conversations")
+        .select("updated_at")
+        .eq("id", conversationId)
+        .single();
+
+      // updated_atが更新されていることを確認
+      const beforeTime = new Date(conversationBefore?.updated_at || "")
+        .getTime();
+      const afterTime = new Date(conversationAfter?.updated_at || "").getTime();
+      expect(afterTime).toBeGreaterThan(beforeTime);
+    });
+
+    it("メッセージが削除されたとき、会話のupdated_atが更新される", async () => {
+      // 現在の会話のupdated_atを取得
+      const { data: conversationBefore } = await adminSupabase
+        .from("conversations")
+        .select("updated_at")
+        .eq("id", conversationId)
+        .single();
+
+      // 少し待機
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // メッセージを削除
+      await adminSupabase.from("messages").delete().eq("id", messageId);
+
+      // 更新後の会話のupdated_atを取得
+      const { data: conversationAfter } = await adminSupabase
+        .from("conversations")
+        .select("updated_at")
+        .eq("id", conversationId)
+        .single();
+
+      // updated_atが更新されていることを確認
+      const beforeTime = new Date(conversationBefore?.updated_at || "")
+        .getTime();
+      const afterTime = new Date(conversationAfter?.updated_at || "").getTime();
+      expect(afterTime).toBeGreaterThan(beforeTime);
     });
   });
 });

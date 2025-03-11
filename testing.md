@@ -64,16 +64,23 @@
    npx supabase start
    ```
 
-2. 最新のマイグレーションを適用（新しいテスト実行前に必須）
+2. データベースをリセットし、すべてのマイグレーションを最初から適用
 
    ```bash
-   npx supabase migration up
+   cd test
+   npx supabase db reset
    ```
 
-3. テストを実行
+3. Edge Functions を起動
 
    ```bash
-   cd ..  # プロジェクトルートに戻る
+   cd test
+   npx supabase functions serve
+   ```
+
+4. テストを実行
+
+   ```bash
    npm test
    ```
 
